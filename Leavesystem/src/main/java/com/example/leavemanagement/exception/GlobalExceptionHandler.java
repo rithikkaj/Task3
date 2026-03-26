@@ -4,7 +4,10 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -32,6 +35,16 @@ public class GlobalExceptionHandler {
                         : error.getDefaultMessage())
                 .toList();
         return buildResponse(HttpStatus.BAD_REQUEST, details);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiError> handleJsonParseError(HttpMessageNotReadableException exception) {
+        return buildResponse(HttpStatus.BAD_REQUEST, List.of("Invalid request payload format."));
+    }
+
+    @ExceptionHandler({AuthenticationException.class, AuthenticationCredentialsNotFoundException.class})
+    public ResponseEntity<ApiError> handleAuthentication(Exception exception) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, List.of("Invalid credentials."));
     }
 
     private ResponseEntity<ApiError> buildResponse(HttpStatus status, List<String> details) {

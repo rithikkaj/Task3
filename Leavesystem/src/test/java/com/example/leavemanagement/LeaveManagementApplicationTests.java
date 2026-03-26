@@ -38,7 +38,7 @@ class LeaveManagementApplicationTests {
     @Test
     void adminCannotApproveOwnLeave() {
         EmployeeResponse admin = employeeService.createEmployee(
-                new CreateEmployeeRequest("Admin", "admin@example.com", Role.ADMIN)
+                new CreateEmployeeRequest("Admin", "admin@example.com", "password123", Role.ADMIN)
         );
 
         var leave = leaveService.applyLeave(
@@ -56,10 +56,10 @@ class LeaveManagementApplicationTests {
     @Test
     void overlappingActiveLeavesAreRejected() {
         EmployeeResponse employee = employeeService.createEmployee(
-                new CreateEmployeeRequest("Employee", "employee@example.com", Role.EMPLOYEE)
+                new CreateEmployeeRequest("Employee", "employee@example.com", "password123", Role.EMPLOYEE)
         );
         EmployeeResponse admin = employeeService.createEmployee(
-                new CreateEmployeeRequest("Approver", "approver@example.com", Role.ADMIN)
+                new CreateEmployeeRequest("Approver", "approver@example.com", "password123", Role.ADMIN)
         );
 
         var firstLeave = leaveService.applyLeave(

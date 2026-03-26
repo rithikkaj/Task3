@@ -7,6 +7,7 @@ import com.example.leavemanagement.exception.BadRequestException;
 import com.example.leavemanagement.exception.ResourceNotFoundException;
 import com.example.leavemanagement.repository.EmployeeRepository;
 import java.util.List;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,9 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public EmployeeService(EmployeeRepository employeeRepository) {
+    public EmployeeService(EmployeeRepository employeeRepository, PasswordEncoder passwordEncoder) {
         this.employeeRepository = employeeRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public EmployeeResponse createEmployee(CreateEmployeeRequest request) {
@@ -29,6 +32,7 @@ public class EmployeeService {
         Employee employee = Employee.builder()
                 .name(request.name())
                 .email(request.email())
+                .password(passwordEncoder.encode(request.password()))
                 .role(request.role())
                 .build();
 
