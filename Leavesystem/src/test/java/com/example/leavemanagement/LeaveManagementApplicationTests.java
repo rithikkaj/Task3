@@ -6,7 +6,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.example.leavemanagement.dto.ApplyLeaveRequest;
 import com.example.leavemanagement.dto.CreateEmployeeRequest;
 import com.example.leavemanagement.dto.EmployeeResponse;
+import com.example.leavemanagement.dto.UpdateLeaveStatusRequest;
+import com.example.leavemanagement.entity.LeaveStatus;
 import com.example.leavemanagement.entity.LeaveType;
+import com.example.leavemanagement.entity.Role;
 import com.example.leavemanagement.exception.BadRequestException;
 import com.example.leavemanagement.service.EmployeeService;
 import com.example.leavemanagement.service.LeaveService;
@@ -33,31 +36,40 @@ class LeaveManagementApplicationTests {
     }
 
     @Test
-    void leaveCanBeAppliedAndRetrieved() {
-        EmployeeResponse employee = employeeService.createEmployee(
-                new CreateEmployeeRequest("Employee", "employee@example.com", com.example.leavemanagement.entity.Role.EMPLOYEE)
+    void adminCannotApproveOwnLeave() {
+        EmployeeResponse admin = employeeService.createEmployee(
+                new CreateEmployeeRequest("Admin", "admin@example.com", Role.ADMIN)
         );
 
         var leave = leaveService.applyLeave(
-                employee.id(),
+                admin.id(),
                 new ApplyLeaveRequest(LeaveType.CASUAL, LocalDate.now().plusDays(1), LocalDate.now().plusDays(2))
         );
 
-        var history = leaveService.getLeaveHistory(employee.id());
-
-        assertThat(history).hasSize(1);
-        assertThat(history.getFirst().id()).isEqualTo(leave.id());
+        assertThatThrownBy(() -> leaveService.updateLeaveStatus(
+                leave.id(),
+                new UpdateLeaveStatusRequest(admin.id(), LeaveStatus.APPROVED)
+        )).isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("own leave");
     }
 
     @Test
     void overlappingActiveLeavesAreRejected() {
         EmployeeResponse employee = employeeService.createEmployee(
-                new CreateEmployeeRequest("Employee", "employee2@example.com", com.example.leavemanagement.entity.Role.EMPLOYEE)
+                new CreateEmployeeRequest("Employee", "employee@example.com", Role.EMPLOYEE)
+        );
+        EmployeeResponse admin = employeeService.createEmployee(
+                new CreateEmployeeRequest("Approver", "approver@example.com", Role.ADMIN)
         );
 
-        leaveService.applyLeave(
+        var firstLeave = leaveService.applyLeave(
                 employee.id(),
                 new ApplyLeaveRequest(LeaveType.SICK, LocalDate.now().plusDays(3), LocalDate.now().plusDays(5))
+        );
+
+        leaveService.updateLeaveStatus(
+                firstLeave.id(),
+                new UpdateLeaveStatusRequest(admin.id(), LeaveStatus.APPROVED)
         );
 
         assertThatThrownBy(() -> leaveService.applyLeave(

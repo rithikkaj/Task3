@@ -43,4 +43,8 @@ public class Employee {
     @OneToMany(mappedBy = "appliedBy", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<LeaveRequest> appliedLeaves = new ArrayList<>();
+
+    @OneToMany(mappedBy = "approvedBy")
+    @Builder.Default
+    private List<LeaveRequest> approvedLeaves = new ArrayList<>();
 }

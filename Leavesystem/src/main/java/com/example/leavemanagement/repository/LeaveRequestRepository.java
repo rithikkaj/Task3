@@ -13,6 +13,8 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
 
     List<LeaveRequest> findByStatusOrderByStartDateAsc(LeaveStatus status);
 
+    List<LeaveRequest> findByApprovedByIdOrderByApprovedAtDesc(Long adminId);
+
     boolean existsByAppliedByIdAndStatusInAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
             Long employeeId,
             Collection<LeaveStatus> statuses,

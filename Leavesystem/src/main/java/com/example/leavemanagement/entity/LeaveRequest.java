@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -42,4 +43,10 @@ public class LeaveRequest {
     @ManyToOne(optional = false)
     @JoinColumn(name = "employee_id", nullable = false)
     private Employee appliedBy;
+
+    @ManyToOne
+    @JoinColumn(name = "approved_by")
+    private Employee approvedBy;
+
+    private OffsetDateTime approvedAt;
 }
